@@ -348,7 +348,7 @@ get_md_obj_pos (returns the center position of the detection frame divided
 #include <errno.h> /* Error number definitions */
 #include <string.h>
 
-#define DEBUG 0
+#define DEBUG 1
 
 #define D30ONLY 0
 
@@ -1140,7 +1140,7 @@ int doCommand(char *commandline, int *ret1, int *ret2, int *ret3) {
   }
 
   if (strcmp(command, "set_zoom_value") == 0) {
-    if ((arg1 == NULL) || (intarg1 < 0) || (intarg1 > 1023)) {
+    if ((arg1 == NULL) || (intarg1 < 0) || (intarg1 > 31424)) {
       return 41;
     }
     if (VISCA_set_zoom_value(&iface, &camera, intarg1)!=VISCA_SUCCESS) {
@@ -2486,6 +2486,122 @@ int doCommand(char *commandline, int *ret1, int *ret2, int *ret3) {
     *ret2 = value8b;
     *ret3 = value8c;
     return 13;
+  }
+
+  /**EPH**/
+  if (strcmp(command, "set_digital_output") == 0) {
+    if ((arg1 == NULL)) {
+      return 41;
+    }
+    uint8_t dout = 0x0;
+    switch (intarg1)
+    {
+    case 1:
+      dout = EW9500H_REGISTER_DIGITAL_OUTPUT_HDMI_RGB;
+      break;
+    case 2:
+      dout = EW9500H_REGISTER_DIGITAL_OUTPUT_DVI_RGB;
+      break;
+    default:
+      dout = EW9500H_REGISTER_DIGITAL_OUTPUT_HDMI_YUV;
+      break;
+    }
+    if (VISCA_set_register(&iface, &camera, EW9500H_REGISTER_DIGITAL_OUTPUT, dout)!=VISCA_SUCCESS) {
+      return 46;
+    }
+    return 10;
+  }
+
+  if (strcmp(command, "set_monitoring_mode") == 0) {
+    if ((arg1 == NULL)) {
+      return 41;
+    }
+    uint8_t res = 0x0;
+    switch (intarg1)
+    {
+    case 2:
+      res = EW9500H_REGISTER_VIDEO_1080I_60;
+      break;
+    case 4:
+      res = EW9500H_REGISTER_VIDEO_1080I_50;
+      break;
+    case 6:
+      res = EW9500H_REGISTER_VIDEO_1080P_29;
+      break;
+    case 7:
+      res = EW9500H_REGISTER_VIDEO_1080P_30;
+      break;
+    case 8:
+      res = EW9500H_REGISTER_VIDEO_1080P_25;
+      break;
+    case 9:
+      res = EW9500H_REGISTER_VIDEO_720P_59;
+      break;
+    case 10:
+      res = EW9500H_REGISTER_VIDEO_720P_60;
+      break;
+    case 12:
+      res = EW9500H_REGISTER_VIDEO_720P_50;
+      break;
+    case 14:
+      res = EW9500H_REGISTER_VIDEO_720P_29;
+      break;
+    case 15:
+      res = EW9500H_REGISTER_VIDEO_720P_30;
+      break;
+    case 17:
+      res = EW9500H_REGISTER_VIDEO_720P_25;
+      break;
+    case 19:
+      res = EW9500H_REGISTER_VIDEO_1080P_59;
+      break;
+    case 20:
+      res = EW9500H_REGISTER_VIDEO_1080P_50;
+      break;
+    case 21:
+      res = EW9500H_REGISTER_VIDEO_1080P_60;
+      break;
+    case 26:
+      res = EW9500H_REGISTER_VIDEO_480P_60;
+      break;
+    case 27:
+      res = EW9500H_REGISTER_VIDEO_480P_59;
+      break;
+    case 28:
+      res = EW9500H_REGISTER_VIDEO_576P_50;
+      break;
+    case 37:
+      res = EW9500H_REGISTER_VIDEO_2160P_60;
+      break;
+    case 38:
+      res = EW9500H_REGISTER_VIDEO_2160P_60_XL;
+      break;
+    case 39:
+      res = EW9500H_REGISTER_VIDEO_2160P_50;
+      break;
+    case 40:
+      res = EW9500H_REGISTER_VIDEO_2160P_30;
+      break;
+    case 41:
+      res = EW9500H_REGISTER_VIDEO_2160P_29;
+      break;
+    case 42:
+      res = EW9500H_REGISTER_VIDEO_2160P_25;
+      break;
+    case 43:
+      res = EW9500H_REGISTER_VIDEO_2160P_30_XL;
+      break;
+    case 44:
+      res = EW9500H_REGISTER_VIDEO_2160P_25_XL;
+      break;
+    default:
+      res = EW9500H_REGISTER_VIDEO_1080I_59;
+      break;
+    }
+    if (VISCA_set_register(&iface, &camera, EW9500H_REGISTER_VIDEO_SIGNAL, res)!=VISCA_SUCCESS) { //Reflected after camera reset
+      return 46;
+    }
+    return 10;
   }
 
   /* If we reach this point, the commandline matched 
